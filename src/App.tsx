@@ -38,11 +38,13 @@ import { MemoryTimelineTab } from './components/MemoryTimelineTab';
 import { MovieNightModal } from './components/MovieNightModal';
 import { Pause2026Modal } from './components/Pause2026Modal';
 import { MeetingCutscene } from './components/MeetingCutscene';
+import { LoginGate } from './components/LoginGate';
 
 import { Briefcase, Heart, Plane, BookOpen } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const STORAGE_KEY = 'love_story_idle_game_save_v7';
+const AUTH_STORAGE_KEY = 'romantic_game_auth_session';
 
 const DEFAULT_STATE: GameState = {
   totalDays: 0,
@@ -89,6 +91,28 @@ const DEFAULT_STATE: GameState = {
 };
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    try {
+      const local = localStorage.getItem(AUTH_STORAGE_KEY);
+      if (local && JSON.parse(local).authenticated) return true;
+      const session = sessionStorage.getItem(AUTH_STORAGE_KEY);
+      if (session && JSON.parse(session).authenticated) return true;
+    } catch {
+      // ignore
+    }
+    return false;
+  });
+
+  const handleLockApp = () => {
+    try {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+      sessionStorage.removeItem(AUTH_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+    setIsAuthenticated(false);
+  };
+
   const [gameState, setGameState] = useState<GameState>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -641,6 +665,10 @@ export default function App() {
     }
   }, [hasMet, activeTab]);
 
+  if (!isAuthenticated) {
+    return <LoginGate onSuccess={() => setIsAuthenticated(true)} />;
+  }
+
   return (
     <div className="min-h-screen bg-[#F9F7F2] text-[#3D3D3D] flex flex-col font-sans selection:bg-[#D48166] selection:text-white pb-16">
       
@@ -658,6 +686,7 @@ export default function App() {
         onToggleMusic={() => setGameState((p) => ({ ...p, musicEnabled: !p.musicEnabled }))}
         onJumpToDate={handleJumpToDate}
         onResetGame={handleReset}
+        onLockApp={handleLockApp}
       />
 
       {/* Main Content Dashboard */}

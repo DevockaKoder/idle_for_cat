@@ -1,7 +1,7 @@
 import React from 'react';
 import { GameState } from '../types';
 import { formatNumber, formatAgeFromDays, getCalendarDate, getDaysTogether, getStageTitle } from '../utils/formatters';
-import { Coins, Heart, Volume2, VolumeX, Music, RotateCcw, Sparkles, Calendar, Cake } from 'lucide-react';
+import { Coins, Heart, Volume2, VolumeX, Music, RotateCcw, Sparkles, Calendar, Cake, Lock } from 'lucide-react';
 
 interface HeaderStatusProps {
   gameState: GameState;
@@ -9,6 +9,7 @@ interface HeaderStatusProps {
   onToggleMusic: () => void;
   onJumpToDate: (targetDays: number) => void;
   onResetGame: () => void;
+  onLockApp?: () => void;
 }
 
 export const HeaderStatus: React.FC<HeaderStatusProps> = ({
@@ -17,6 +18,7 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
   onToggleMusic,
   onJumpToDate,
   onResetGame,
+  onLockApp,
 }) => {
   const age = formatAgeFromDays(gameState.totalDays);
   const calendar = getCalendarDate(gameState.totalDays);
@@ -149,6 +151,16 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
+
+              {onLockApp && (
+                <button
+                  onClick={onLockApp}
+                  className="p-2 rounded-xl bg-[#F0EDE6] hover:bg-white text-[#7A756B] hover:text-[#4A6B82] border border-[#E5E1D8] transition cursor-pointer"
+                  title="Заблокировать доступ (выйти)"
+                >
+                  <Lock className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
         </div>
