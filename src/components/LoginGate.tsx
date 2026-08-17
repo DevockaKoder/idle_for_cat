@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Lock, Heart, KeyRound, User, Sparkles, Eye, EyeOff, ShieldCheck, HelpCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { sha256, ALLOWED_PASSWORD_HASHES } from '../utils/security';
+import { sha256, ALLOWED_PASSWORD_HASHES, ALLOWED_USER_HASHES } from '../utils/security';
 
 interface LoginGateProps {
   onSuccess: (user: string) => void;
@@ -17,9 +17,14 @@ export const LoginGate: React.FC<LoginGateProps> = ({ onSuccess }) => {
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showHint, setShowHint] = useState(false);
+  
+  // Custom secret setting state
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [customLogin, setCustomLogin] = useState('');
+  const [currentSecret, setCurrentSecret] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [changeSuccessMsg, setChangeSuccessMsg] = useState<string | null>(null);
+  const [changeError, setChangeError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -27,7 +32,7 @@ export const LoginGate: React.FC<LoginGateProps> = ({ onSuccess }) => {
     setError(null);
 
     const cleanUser = username.trim();
-    const cleanPwd = password.trim().toLowerCase();
+    const cleanPwd = password.trim();
 
     if (!cleanUser) {
       setError('Пожалуйста, введите имя или логин');
@@ -42,17 +47,27 @@ export const LoginGate: React.FC<LoginGateProps> = ({ onSuccess }) => {
     setIsLoading(true);
 
     try {
+      const userHash = await sha256(cleanUser);
       const inputHash = await sha256(cleanPwd);
       const savedCustomHash = localStorage.getItem(CUSTOM_PASSWORD_HASH_KEY);
 
-      let isValid = false;
-      if (savedCustomHash) {
-        isValid = inputHash === savedCustomHash;
-      } else {
-        isValid = ALLOWED_PASSWORD_HASHES.includes(inputHash);
+      // Check login (must be recognized user or valid session)
+      const isRecognizedUser = ALLOWED_USER_HASHES.includes(userHash);
+      if (!isRecognizedUser && !savedCustomHash) {
+        setError('Пользователь с таким именем/логином не найден в приватном доступе.');
+        setIsLoading(false);
+        return;
       }
 
-      if (isValid) {
+      let isValidPassword = false;
+      if (savedCustomHash) {
+        // Either matches the custom set hash or any default system hash
+        isValidPassword = inputHash === savedCustomHash || ALLOWED_PASSWORD_HASHES.includes(inputHash);
+      } else {
+        isValidPassword = ALLOWED_PASSWORD_HASHES.includes(inputHash);
+      }
+
+      if (isValidPassword) {
         try {
           confetti({
             particleCount: 50,
@@ -78,7 +93,7 @@ export const LoginGate: React.FC<LoginGateProps> = ({ onSuccess }) => {
 
         onSuccess(cleanUser);
       } else {
-        setError('Неверный код доступа. Воспользуйтесь подсказкой, если забыли секрет.');
+        setError('Неверный код доступа / пароль. Проверьте ввод или откройте подсказку.');
       }
     } catch {
       setError('Ошибка проверки безопасности. Попробуйте еще раз.');
@@ -89,26 +104,71 @@ export const LoginGate: React.FC<LoginGateProps> = ({ onSuccess }) => {
 
   const handleSetCustomPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanNew = newPassword.trim().toLowerCase();
-    if (!cleanNew) return;
+    setChangeError(null);
+
+    const cleanUser = customLogin.trim();
+    const cleanCur = currentSecret.trim();
+    const cleanNew = newPassword.trim();
+
+    if (!cleanUser) {
+      setChangeError('Введите ваш логин для подтверждения прав');
+      return;
+    }
+
+    if (!cleanCur) {
+      setChangeError('Введите текущий секрет (любой стандартный пароль)');
+      return;
+    }
+
+    if (!cleanNew || cleanNew.length < 3) {
+      setChangeError('Новый секрет должен быть не менее 3 символов');
+      return;
+    }
 
     try {
+      const userHash = await sha256(cleanUser);
+      const curHash = await sha256(cleanCur);
+      const savedCustomHash = localStorage.getItem(CUSTOM_PASSWORD_HASH_KEY);
+
+      // Verify user rights
+      const isRecognizedUser = ALLOWED_USER_HASHES.includes(userHash);
+      if (!isRecognizedUser) {
+        setChangeError('Неверный логин. Менять секрет могут только владельцы архива.');
+        return;
+      }
+
+      // Verify current password knowledge
+      const isValidCur = savedCustomHash
+        ? curHash === savedCustomHash || ALLOWED_PASSWORD_HASHES.includes(curHash)
+        : ALLOWED_PASSWORD_HASHES.includes(curHash);
+
+      if (!isValidCur) {
+        setChangeError('Текущий секрет указан неверно.');
+        return;
+      }
+
       const newHash = await sha256(cleanNew);
       localStorage.setItem(CUSTOM_PASSWORD_HASH_KEY, newHash);
-      setChangeSuccessMsg('Новый секретный пароль успешно сохранён и зашифрован!');
-      setPassword(newPassword.trim());
+      setChangeSuccessMsg('Новый секрет успешно сохранён в зашифрованном виде (SHA-256)!');
+      setUsername(cleanUser);
+      setPassword(cleanNew);
       setIsChangingPassword(false);
+      setCustomLogin('');
+      setCurrentSecret('');
       setNewPassword('');
-      setTimeout(() => setChangeSuccessMsg(null), 4000);
+      setTimeout(() => setChangeSuccessMsg(null), 5000);
     } catch {
-      setError('Не удалось сохранить пароль');
+      setChangeError('Ошибка при сохранении секрета.');
     }
   };
 
   const handleResetToDefault = () => {
     localStorage.removeItem(CUSTOM_PASSWORD_HASH_KEY);
-    setChangeSuccessMsg('Сброшено на стандартный код доступа');
+    setChangeSuccessMsg('Сброшено на стандартные секреты архива.');
     setIsChangingPassword(false);
+    setCustomLogin('');
+    setCurrentSecret('');
+    setNewPassword('');
     setTimeout(() => setChangeSuccessMsg(null), 4000);
   };
 
@@ -128,7 +188,7 @@ export const LoginGate: React.FC<LoginGateProps> = ({ onSuccess }) => {
           </div>
           
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#4A6B82]/10 border border-[#4A6B82]/20 text-[#4A6B82] text-xs font-semibold mb-2">
-            <ShieldCheck className="w-3.5 h-3.5" /> Личный архив
+            <ShieldCheck className="w-3.5 h-3.5" /> Защищённый личный архив
           </div>
           
           <h1 className="text-2xl font-serif font-bold text-[#3D3D3D] tracking-tight">
@@ -224,7 +284,7 @@ export const LoginGate: React.FC<LoginGateProps> = ({ onSuccess }) => {
               className="w-full py-3 bg-[#4A6B82] hover:bg-[#3D5A6E] text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer hover:shadow-lg active:scale-[0.99] disabled:opacity-70"
             >
               <Heart className="w-4 h-4 fill-current text-[#D48166]" />
-              <span>{isLoading ? 'Проверка ключа...' : 'Войти в игру'}</span>
+              <span>{isLoading ? 'Проверка...' : 'Войти в историю'}</span>
             </button>
 
             {/* Help & Customization Links */}
@@ -240,65 +300,108 @@ export const LoginGate: React.FC<LoginGateProps> = ({ onSuccess }) => {
 
               <button
                 type="button"
-                onClick={() => setIsChangingPassword(true)}
+                onClick={() => {
+                  setIsChangingPassword(true);
+                  setChangeError(null);
+                }}
                 className="text-[#7A756B] hover:text-[#3D3D3D] hover:underline cursor-pointer"
               >
                 ⚙️ Свой секрет
               </button>
             </div>
 
-            {/* Cryptic Hint Box (без открытого слива паролей) */}
+            {/* Hint Box */}
             {showHint && (
-              <div className="p-3 rounded-xl bg-[#F0EDE6] border border-[#E5E1D8] text-xs text-[#59554D] leading-relaxed space-y-1.5 animate-fadeIn">
-                <p className="font-semibold text-[#3D3D3D]">Секретом может быть:</p>
-                <p className="flex items-center gap-1.5">• Текущий 4-значный год</p>
-                <p className="flex items-center gap-1.5">• День и месяц вашей первой встречи (4 цифры, ДДММ)</p>
-                <p className="flex items-center gap-1.5">• Главное чувство (рус. или англ.) или любимый питомец</p>
+              <div className="p-3.5 rounded-xl bg-[#F0EDE6] border border-[#E5E1D8] text-xs text-[#59554D] leading-relaxed space-y-1.5 animate-fadeIn">
+                <p className="font-semibold text-[#3D3D3D]">Секретом может быть любой из вариантов:</p>
+                <p className="flex items-center gap-1.5">• <strong>0709</strong> (или 07.09 — дата встречи)</p>
+                <p className="flex items-center gap-1.5">• <strong>2026</strong> (текущий год)</p>
+                <p className="flex items-center gap-1.5">• <strong>любовь</strong> или <strong>love</strong></p>
+                <p className="flex items-center gap-1.5">• <strong>кот</strong> или <strong>cat</strong></p>
+                <p className="flex items-center gap-1.5">• <strong>1234</strong></p>
+                <p className="flex items-center gap-1.5">• Имя одного из вас</p>
               </div>
             )}
           </form>
         ) : (
-          /* Set Custom Password Form */
-          <form onSubmit={handleSetCustomPassword} className="space-y-4">
+          /* Set Custom Password Form with Strict Login & Old Secret Verification */
+          <form onSubmit={handleSetCustomPassword} className="space-y-3.5">
+            <div className="text-center pb-1">
+              <h2 className="text-sm font-bold text-[#3D3D3D]">Установка своего секрета</h2>
+              <p className="text-xs text-[#7A756B]">Требуется подтверждение логина и текущего секрета</p>
+            </div>
+
+            {changeError && (
+              <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
+                {changeError}
+              </div>
+            )}
+
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#7A756B] mb-1.5">
-                Задать свой секретный пароль
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#7A756B] mb-1">
+                1. Ваш логин (Имя)
+              </label>
+              <input
+                type="text"
+                value={customLogin}
+                onChange={(e) => setCustomLogin(e.target.value)}
+                placeholder="Подтвердите ваше имя..."
+                className="w-full px-3.5 py-2 bg-[#F9F7F2] border border-[#E5E1D8] rounded-xl text-sm text-[#3D3D3D] focus:outline-none focus:ring-2 focus:ring-[#4A6B82]"
+                autoFocus
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#7A756B] mb-1">
+                2. Текущий секрет
+              </label>
+              <input
+                type="password"
+                value={currentSecret}
+                onChange={(e) => setCurrentSecret(e.target.value)}
+                placeholder="Например, 0709, 2026 или любовь"
+                className="w-full px-3.5 py-2 bg-[#F9F7F2] border border-[#E5E1D8] rounded-xl text-sm text-[#3D3D3D] focus:outline-none focus:ring-2 focus:ring-[#4A6B82] font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#7A756B] mb-1">
+                3. Новый секретный пароль
               </label>
               <input
                 type="text"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="Придумайте новый код..."
-                className="w-full px-4 py-2.5 bg-[#F9F7F2] border border-[#E5E1D8] rounded-xl text-sm text-[#3D3D3D] focus:outline-none focus:ring-2 focus:ring-[#4A6B82] font-mono"
-                autoFocus
+                className="w-full px-3.5 py-2 bg-[#F9F7F2] border border-[#E5E1D8] rounded-xl text-sm text-[#3D3D3D] focus:outline-none focus:ring-2 focus:ring-[#4A6B82] font-mono"
               />
-              <p className="text-[11px] text-[#A39E93] mt-1.5 leading-tight">
-                Пароль сохранится в виде необратимого SHA-256 хеша в памяти вашего браузера.
+              <p className="text-[11px] text-[#A39E93] mt-1 leading-tight">
+                Сохраняется в виде безопасного SHA-256 хеша.
               </p>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 pt-1">
               <button
                 type="submit"
                 className="flex-1 py-2.5 bg-[#4A6B82] hover:bg-[#3D5A6E] text-white font-bold rounded-xl text-xs shadow-xs transition cursor-pointer"
               >
-                Сохранить пароль
+                Сохранить секрет
               </button>
               <button
                 type="button"
                 onClick={() => setIsChangingPassword(false)}
                 className="px-3 py-2.5 bg-[#F0EDE6] hover:bg-[#E5E1D8] text-[#7A756B] rounded-xl text-xs transition cursor-pointer"
               >
-                Назад
+                Отмена
               </button>
             </div>
 
             <button
               type="button"
               onClick={handleResetToDefault}
-              className="w-full text-center text-[11px] text-rose-600 hover:underline cursor-pointer pt-2"
+              className="w-full text-center text-[11px] text-rose-600 hover:underline cursor-pointer pt-1"
             >
-              Сбросить на базовые секреты
+              Сбросить на базовые секреты архива
             </button>
           </form>
         )}
