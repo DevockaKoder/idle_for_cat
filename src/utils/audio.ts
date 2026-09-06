@@ -68,6 +68,27 @@ export function playTapSound(pitchMultiplier = 1) {
   osc.stop(ctx.currentTime + 0.07);
 }
 
+export function playCoinSound() {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(987.77, now); // B5
+  osc.frequency.setValueAtTime(1318.51, now + 0.06); // E6
+
+  gain.gain.setValueAtTime(0.14, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.start(now);
+  osc.stop(now + 0.22);
+}
+
 export function playHeartSound() {
   const ctx = getAudioContext();
   if (!ctx) return;

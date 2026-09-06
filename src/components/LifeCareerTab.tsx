@@ -7,9 +7,14 @@ import { Coins, ArrowUpCircle, CheckCircle2, TrendingUp, Sparkles, Clock, Chevro
 interface LifeCareerTabProps {
   gameState: GameState;
   onBuyUpgrade: (upgrade: UpgradeItem) => void;
+  onOpenRenovationGame?: () => void;
 }
 
-export const LifeCareerTab: React.FC<LifeCareerTabProps> = ({ gameState, onBuyUpgrade }) => {
+export const LifeCareerTab: React.FC<LifeCareerTabProps> = ({
+  gameState,
+  onBuyUpgrade,
+  onOpenRenovationGame,
+}) => {
   const [showCompletedArchive, setShowCompletedArchive] = useState(false);
 
   const getUpgradeCost = (item: UpgradeItem, currentLevel: number) => {
@@ -162,6 +167,48 @@ export const LifeCareerTab: React.FC<LifeCareerTabProps> = ({ gameState, onBuyUp
         </div>
         <div className="bg-[#F0EDE6] border border-[#E5E1D8] px-3 py-1 rounded-xl text-xs text-[#4A6B82] font-semibold">
           Возраст: <span className="font-mono text-[#D48166]">{currentAge.years} лет, {currentAge.months} мес.</span>
+        </div>
+      </div>
+
+      {/* Renovation Match-3 Mini-Game Hero Banner */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-linear-to-r from-[#4A6B82]/10 via-[#FDFBF7] to-[#D48166]/10 border-2 border-[#4A6B82]/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-14 h-14 rounded-2xl bg-white border border-[#4A6B82]/30 text-[#4A6B82] flex items-center justify-center text-3xl shadow-xs shrink-0">
+            🛠️
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] uppercase font-bold tracking-wider text-[#4A6B82]">
+                Мини-игра раздела
+              </span>
+              <span className="text-[10px] bg-[#4A6B82] text-white px-2 py-0.5 rounded-full font-bold">
+                12 уровней
+              </span>
+            </div>
+            <h3 className="text-base sm:text-lg font-bold text-[#3D3D3D] mt-0.5">
+              Ремонт квартиры: Три в ряд
+            </h3>
+            <p className="text-xs text-[#7A756B] max-w-lg mt-0.5 leading-relaxed">
+              Собери сантехнику 🚽, скотч 🩹, лампочки 💡, молотки 🔨 и кирпичи 🧱! Пройди все 12 непростых этапов ремонта, заработай монеты и ускорь приближение нашей совместной жизни!
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 w-full md:w-auto shrink-0 justify-between md:justify-end">
+          <div className="text-right">
+            <div className="text-[11px] text-[#7A756B]">Текущий этап:</div>
+            <div className="text-sm font-mono font-bold text-[#4A6B82]">
+              {gameState.renovationLevel || 1} / 12
+            </div>
+          </div>
+
+          <button
+            onClick={onOpenRenovationGame}
+            className="px-5 py-3 rounded-2xl bg-[#4A6B82] hover:bg-[#3D5A70] text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md cursor-pointer transition-transform active:scale-95 shrink-0"
+          >
+            <span>Играть в Ремонт</span>
+            <span>🔨</span>
+          </button>
         </div>
       </div>
 

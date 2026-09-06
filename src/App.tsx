@@ -39,6 +39,8 @@ import { MovieNightModal } from './components/MovieNightModal';
 import { Pause2026Modal } from './components/Pause2026Modal';
 import { MeetingCutscene } from './components/MeetingCutscene';
 import { LoginGate } from './components/LoginGate';
+import { RenovationMatch3Modal } from './components/RenovationMatch3Modal';
+import { RoadTripRacingModal } from './components/RoadTripRacingModal';
 
 import { Briefcase, Heart, Plane, BookOpen } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -88,6 +90,10 @@ const DEFAULT_STATE: GameState = {
   soundEnabled: true,
   musicEnabled: false,
   endlessMode: false,
+
+  renovationLevel: 1,
+  renovationStars: {},
+  racingHighScores: {},
 };
 
 export default function App() {
@@ -132,6 +138,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'life' | 'love' | 'travel' | 'memories'>('life');
   const [floatingTexts, setFloatingTexts] = useState<FloatingText[]>([]);
   const [isMovieOpen, setIsMovieOpen] = useState(false);
+  const [isRenovationOpen, setIsRenovationOpen] = useState(false);
+  const [isRacingOpen, setIsRacingOpen] = useState(false);
   const [showPauseModal, setShowPauseModal] = useState(false);
   const [showMeetingCutscene, setShowMeetingCutscene] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -188,9 +196,11 @@ export default function App() {
       baseCoinsSec *= 1.4;
     }
 
-    const finalCoinsSec = Math.round(baseCoinsSec * totalIncomeMult * warmth);
-    const finalLoveSec = Math.round(loveSec * warmth);
-    const finalClickPow = Math.max(1, Math.round(baseClickPow * totalIncomeMult * warmth + finalCoinsSec * 0.06));
+    // Rebalance: cap warmth gracefully so late-game economy remains challenging & engaging
+    const cappedWarmth = Math.min(3.2, 1 + (warmth - 1) * 0.4);
+    const finalCoinsSec = Math.round(baseCoinsSec * totalIncomeMult * cappedWarmth);
+    const finalLoveSec = Math.round(loveSec * cappedWarmth);
+    const finalClickPow = Math.max(1, Math.round(baseClickPow * totalIncomeMult * cappedWarmth + finalCoinsSec * 0.04));
 
     let finalDaysClick = 1.0;
     let finalDaysSec = 0.2;
@@ -200,8 +210,10 @@ export default function App() {
         finalDaysSec = 0;
         finalDaysClick = 0;
       } else {
-        finalDaysSec = 1.0;
-        finalDaysClick = 0;
+        // Joint phase rebalance: peaceful passive pace of 0.08 days/sec (~12.5s per day)
+        // Time advancement is driven through mini-games, city trips, gifts and clicks!
+        finalDaysSec = 0.08;
+        finalDaysClick = 0.25;
       }
     } else {
       finalDaysClick = Math.min(25, parseFloat(baseDaysClick.toFixed(1)));
@@ -434,12 +446,28 @@ export default function App() {
         return;
       }
       if (gameState.soundEnabled) playKissSound();
-      setGameState((prev) => ({
-        ...prev,
-        lovePoints: prev.lovePoints + 20,
-        totalKisses: prev.totalKisses + 1,
-        isAfk: false,
-      }));
+
+      const rates = calculateRates(gameState);
+      const daysToAdd = rates.daysPerClick || 0.25;
+
+      setGameState((prev) => {
+        let newTotalDays = prev.totalDays + daysToAdd;
+        let pauseFlag = prev.isPaused2026;
+        if (newTotalDays >= PAUSE_DAY && prev.isPaused2026 === 0 && !prev.endlessMode) {
+          pauseFlag = 1;
+          newTotalDays = PAUSE_DAY;
+        }
+
+        return {
+          ...prev,
+          totalDays: newTotalDays,
+          isPaused2026: pauseFlag,
+          lovePoints: prev.lovePoints + 25,
+          coins: prev.coins + Math.max(5, Math.floor(rates.clickPower * 0.4)),
+          totalKisses: prev.totalKisses + 1,
+          isAfk: false,
+        };
+      });
 
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
       const x = e.clientX ? e.clientX - rect.left : 100;
@@ -447,7 +475,7 @@ export default function App() {
 
       const newParticle: FloatingText = {
         id: `${Date.now()}_${Math.random()}`,
-        text: '+20 ❤️ Каждый день вместе бесценен',
+        text: `+25 ❤️ +${daysToAdd} дн. Каждый день вместе бесценен`,
         x: Math.max(20, Math.min(rect.width - 140, x + (Math.random() * 40 - 20))),
         y: Math.max(20, y + (Math.random() * 20 - 10)),
         color: '#D48166',
@@ -634,6 +662,69 @@ export default function App() {
     showToast(`🍿 Киновечер начался! Смотрим "${genre.name}" с ${snack.name}!`);
   };
 
+  const handleCompleteRenovationLevel = (
+    level: number,
+    stars: number,
+    rewardCoins: number,
+    rewardDays: number
+  ) => {
+    touchActivity();
+    setGameState((prev) => {
+      const nextLevel = Math.max(prev.renovationLevel || 1, level + 1);
+      const updatedStars = {
+        ...(prev.renovationStars || {}),
+        [level]: Math.max(prev.renovationStars?.[level] || 0, stars),
+      };
+      let newTotalDays = prev.totalDays + rewardDays;
+      let pauseFlag = prev.isPaused2026;
+      if (newTotalDays >= PAUSE_DAY && prev.isPaused2026 === 0 && !prev.endlessMode) {
+        pauseFlag = 1;
+        newTotalDays = PAUSE_DAY;
+      }
+      return {
+        ...prev,
+        totalDays: newTotalDays,
+        isPaused2026: pauseFlag,
+        coins: prev.coins + rewardCoins,
+        renovationLevel: nextLevel,
+        renovationStars: updatedStars,
+      };
+    });
+    showToast(`🔨 Этап ремонта ${level} пройден! +${formatNumber(rewardCoins)} 💰 и +${rewardDays} дней!`);
+  };
+
+  const handleCompleteRace = (
+    cityId: string,
+    earnedLove: number,
+    earnedCoins: number,
+    daysAdvance: number
+  ) => {
+    touchActivity();
+    setGameState((prev) => {
+      let newTotalDays = prev.totalDays + daysAdvance;
+      let pauseFlag = prev.isPaused2026;
+      if (newTotalDays >= PAUSE_DAY && prev.isPaused2026 === 0 && !prev.endlessMode) {
+        pauseFlag = 1;
+        newTotalDays = PAUSE_DAY;
+      }
+      const currentVisits = prev.cityVisits[cityId] || 0;
+      const unlocked = prev.unlockedCities.includes(cityId)
+        ? prev.unlockedCities
+        : [...prev.unlockedCities, cityId];
+
+      return {
+        ...prev,
+        totalDays: newTotalDays,
+        isPaused2026: pauseFlag,
+        lovePoints: prev.lovePoints + earnedLove,
+        coins: prev.coins + earnedCoins,
+        unlockedCities: unlocked,
+        cityVisits: { ...prev.cityVisits, [cityId]: currentVisits + 1 },
+      };
+    });
+    showToast(`🏁 Гонка завершена! +${formatNumber(earnedLove)} ❤️ и +${daysAdvance} дней совместной жизни!`);
+  };
+
   const handleJumpToDate = (targetDays: number) => {
     touchActivity();
     const isMeetingOrAfter = targetDays >= MEETING_DAY;
@@ -773,7 +864,11 @@ export default function App() {
         {/* Tab View Container */}
         <div className="bg-white border border-[#E5E1D8] rounded-3xl p-4 sm:p-6 shadow-xs">
           {activeTab === 'life' && (
-            <LifeCareerTab gameState={gameState} onBuyUpgrade={handleBuyUpgrade} />
+            <LifeCareerTab
+              gameState={gameState}
+              onBuyUpgrade={handleBuyUpgrade}
+              onOpenRenovationGame={() => setIsRenovationOpen(true)}
+            />
           )}
 
           {activeTab === 'love' && (
@@ -786,7 +881,11 @@ export default function App() {
           )}
 
           {activeTab === 'travel' && (
-            <TravelTab gameState={gameState} onStartTrip={handleStartTrip} />
+            <TravelTab
+              gameState={gameState}
+              onStartTrip={handleStartTrip}
+              onOpenRacingGame={() => setIsRacingOpen(true)}
+            />
           )}
 
           {activeTab === 'memories' && (
@@ -806,6 +905,25 @@ export default function App() {
         lovePoints={gameState.lovePoints}
         onClose={() => setIsMovieOpen(false)}
         onStartMovie={handleStartMovie}
+      />
+
+      {/* Renovation Match-3 Mini-Game Modal */}
+      <RenovationMatch3Modal
+        isOpen={isRenovationOpen}
+        onClose={() => setIsRenovationOpen(false)}
+        soundEnabled={gameState.soundEnabled}
+        currentUnlockedLevel={gameState.renovationLevel || 1}
+        starsMap={gameState.renovationStars || {}}
+        onCompleteLevel={handleCompleteRenovationLevel}
+      />
+
+      {/* Road Trip Racing Mini-Game Modal */}
+      <RoadTripRacingModal
+        isOpen={isRacingOpen}
+        onClose={() => setIsRacingOpen(false)}
+        soundEnabled={gameState.soundEnabled}
+        travelCities={TRAVEL_CITIES}
+        onCompleteRace={handleCompleteRace}
       />
 
       {/* Meeting Cutscene Modal */}

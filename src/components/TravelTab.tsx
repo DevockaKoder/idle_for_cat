@@ -8,9 +8,14 @@ import { motion } from 'motion/react';
 interface TravelTabProps {
   gameState: GameState;
   onStartTrip: (city: TravelCity) => void;
+  onOpenRacingGame?: () => void;
 }
 
-export const TravelTab: React.FC<TravelTabProps> = ({ gameState, onStartTrip }) => {
+export const TravelTab: React.FC<TravelTabProps> = ({
+  gameState,
+  onStartTrip,
+  onOpenRacingGame,
+}) => {
   const hasMet = gameState.totalDays >= 10359;
   const isCurrentlyTraveling = gameState.currentCityTrip !== null;
   const activeTrip = gameState.currentCityTrip;
@@ -94,6 +99,41 @@ export const TravelTab: React.FC<TravelTabProps> = ({ gameState, onStartTrip }) 
           <span className="text-[#3D3D3D]">
             Посещено городов: <strong className="text-[#4A6B82] font-mono">{gameState.unlockedCities.length}/{TRAVEL_CITIES.length}</strong>
           </span>
+        </div>
+      </div>
+
+      {/* Road Trip Racing Mini-Game Banner */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-linear-to-r from-[#D48166]/15 via-[#FDFBF7] to-[#E6AF2E]/15 border-2 border-[#D48166]/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="w-14 h-14 rounded-2xl bg-white border border-[#D48166]/30 text-[#D48166] flex items-center justify-center text-3xl shadow-xs shrink-0">
+            🏎️
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] uppercase font-bold tracking-wider text-[#D48166]">
+                Мини-игра раздела
+              </span>
+              <span className="text-[10px] bg-[#D48166] text-white px-2 py-0.5 rounded-full font-bold">
+                Авто-гонки
+              </span>
+            </div>
+            <h3 className="text-base sm:text-lg font-bold text-[#3D3D3D] mt-0.5">
+              Гонки по дорогам России
+            </h3>
+            <p className="text-xs text-[#7A756B] max-w-lg mt-0.5 leading-relaxed">
+              Отправляйтесь в романтическую автопоездку вдвоем! Управляйте машинкой 🚗 клавишами A/D или стрелками, объезжайте ямы и конусы, собирайте канистры с бензином ⛽ и привозите тысячи Очков Любви ❤️!
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 w-full md:w-auto shrink-0 justify-end">
+          <button
+            onClick={onOpenRacingGame}
+            className="w-full md:w-auto px-5 py-3 rounded-2xl bg-[#D48166] hover:bg-[#C27056] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md cursor-pointer transition-transform active:scale-95 shrink-0"
+          >
+            <span>Поехать в гонку</span>
+            <span>🏁</span>
+          </button>
         </div>
       </div>
 

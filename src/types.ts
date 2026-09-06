@@ -58,6 +58,11 @@ export interface GameState {
   musicEnabled: boolean;
   endlessMode: boolean; // after 2026 unlocked
   hasStartedTogether: boolean; // true after user clicks "Начать новую главу вдвоем!"
+
+  // Mini-Games Progress
+  renovationLevel?: number; // current highest unlocked level in Renovation Match-3 (1..12)
+  renovationStars?: Record<number, number>; // level -> stars (1..3)
+  racingHighScores?: Record<string, number>; // cityId -> best score
 }
 
 export interface UpgradeItem {
