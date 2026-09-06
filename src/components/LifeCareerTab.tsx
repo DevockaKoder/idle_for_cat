@@ -28,6 +28,12 @@ export const LifeCareerTab: React.FC<LifeCareerTabProps> = ({
     (item) => gameState.totalDays >= (item.requiredDays || 0)
   );
 
+  // Check if the renovation upgrade item is unlocked (by reaching 25 yrs / 9130 days or bought)
+  const renovationUpgrade = UPGRADES_CATALOG.find((item) => item.id === 'brigade_renovation');
+  const isRenovationUnlocked =
+    (renovationUpgrade && gameState.totalDays >= (renovationUpgrade.requiredDays || 0)) ||
+    (gameState.upgrades['brigade_renovation'] || 0) > 0;
+
   // Active upgrades to show in the main grid:
   // 1. Keep if not maxed (even if old, player still needs to finish it)
   // 2. If maxed, hide once newer age-tier upgrades have appeared
@@ -150,6 +156,22 @@ export const LifeCareerTab: React.FC<LifeCareerTabProps> = ({
             </button>
           )}
         </div>
+
+        {/* Direct Renovation Mini-Game Link inside the Renovation Item */}
+        {item.id === 'brigade_renovation' && onOpenRenovationGame && (
+          <div className="mt-3 pt-2.5 border-t border-[#E5E1D8]/70">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenRenovationGame();
+              }}
+              className="w-full py-2 px-3 rounded-xl bg-[#4A6B82]/10 hover:bg-[#4A6B82]/20 text-[#4A6B82] border border-[#4A6B82]/25 text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer active:scale-98"
+            >
+              <span>🔨</span>
+              <span>Мини-игра: Ремонт квартиры ({gameState.renovationLevel || 1}/12)</span>
+            </button>
+          </div>
+        )}
       </div>
     );
   };
@@ -170,47 +192,49 @@ export const LifeCareerTab: React.FC<LifeCareerTabProps> = ({
         </div>
       </div>
 
-      {/* Renovation Match-3 Mini-Game Hero Banner */}
-      <div className="p-4 sm:p-5 rounded-3xl bg-linear-to-r from-[#4A6B82]/10 via-[#FDFBF7] to-[#D48166]/10 border-2 border-[#4A6B82]/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
-        <div className="flex items-start sm:items-center gap-3.5">
-          <div className="w-14 h-14 rounded-2xl bg-white border border-[#4A6B82]/30 text-[#4A6B82] flex items-center justify-center text-3xl shadow-xs shrink-0">
-            🛠️
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] uppercase font-bold tracking-wider text-[#4A6B82]">
-                Мини-игра раздела
-              </span>
-              <span className="text-[10px] bg-[#4A6B82] text-white px-2 py-0.5 rounded-full font-bold">
-                12 уровней
-              </span>
+      {/* Renovation Match-3 Mini-Game Hero Banner - Shown ONLY after the Renovation upgrade item is unlocked */}
+      {isRenovationUnlocked && (
+        <div className="p-4 sm:p-5 rounded-3xl bg-linear-to-r from-[#4A6B82]/10 via-[#FDFBF7] to-[#D48166]/10 border-2 border-[#4A6B82]/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm animate-fade-in">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="w-14 h-14 rounded-2xl bg-white border border-[#4A6B82]/30 text-[#4A6B82] flex items-center justify-center text-3xl shadow-xs shrink-0">
+              🛠️
             </div>
-            <h3 className="text-base sm:text-lg font-bold text-[#3D3D3D] mt-0.5">
-              Ремонт квартиры: Три в ряд
-            </h3>
-            <p className="text-xs text-[#7A756B] max-w-lg mt-0.5 leading-relaxed">
-              Собери сантехнику 🚽, скотч 🩹, лампочки 💡, молотки 🔨 и кирпичи 🧱! Пройди все 12 непростых этапов ремонта, заработай монеты и ускорь приближение нашей совместной жизни!
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 w-full md:w-auto shrink-0 justify-between md:justify-end">
-          <div className="text-right">
-            <div className="text-[11px] text-[#7A756B]">Текущий этап:</div>
-            <div className="text-sm font-mono font-bold text-[#4A6B82]">
-              {gameState.renovationLevel || 1} / 12
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] uppercase font-bold tracking-wider text-[#4A6B82]">
+                  Мини-игра
+                </span>
+                <span className="text-[10px] bg-[#4A6B82] text-white px-2 py-0.5 rounded-full font-bold">
+                  12 уровней
+                </span>
+              </div>
+              <h3 className="text-base sm:text-lg font-bold text-[#3D3D3D] mt-0.5">
+                Ремонт квартиры: Три в ряд
+              </h3>
+              <p className="text-xs text-[#7A756B] max-w-lg mt-0.5 leading-relaxed">
+                Собери сантехнику 🚽, скотч 🩹, лампочки 💡, молотки 🔨 и кирпичи 🧱! Пройди все 12 непростых этапов ремонта, заработай монеты и ускорь ремонт!
+              </p>
             </div>
           </div>
 
-          <button
-            onClick={onOpenRenovationGame}
-            className="px-5 py-3 rounded-2xl bg-[#4A6B82] hover:bg-[#3D5A70] text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md cursor-pointer transition-transform active:scale-95 shrink-0"
-          >
-            <span>Играть в Ремонт</span>
-            <span>🔨</span>
-          </button>
+          <div className="flex items-center gap-3 w-full md:w-auto shrink-0 justify-between md:justify-end">
+            <div className="text-right">
+              <div className="text-[11px] text-[#7A756B]">Текущий этап:</div>
+              <div className="text-sm font-mono font-bold text-[#4A6B82]">
+                {gameState.renovationLevel || 1} / 12
+              </div>
+            </div>
+
+            <button
+              onClick={onOpenRenovationGame}
+              className="px-5 py-3 rounded-2xl bg-[#4A6B82] hover:bg-[#3D5A70] text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md cursor-pointer transition-transform active:scale-95 shrink-0"
+            >
+              <span>Играть в Ремонт</span>
+              <span>🔨</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Active Upgrades Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">

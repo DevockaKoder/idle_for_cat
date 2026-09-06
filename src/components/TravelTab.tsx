@@ -111,7 +111,7 @@ export const TravelTab: React.FC<TravelTabProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[11px] uppercase font-bold tracking-wider text-[#D48166]">
-                Мини-игра раздела
+                Мини-игра
               </span>
               <span className="text-[10px] bg-[#D48166] text-white px-2 py-0.5 rounded-full font-bold">
                 Авто-гонки

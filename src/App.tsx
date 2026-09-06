@@ -681,6 +681,13 @@ export default function App() {
         pauseFlag = 1;
         newTotalDays = PAUSE_DAY;
       }
+      // Advance the "Ремонт квартиры" upgrade level if unlocked and not maxed
+      const currentRenovUp = prev.upgrades['brigade_renovation'] || 0;
+      const newUpgrades = { ...prev.upgrades };
+      if (prev.totalDays >= 9130 && currentRenovUp < 10) {
+        newUpgrades['brigade_renovation'] = Math.min(10, currentRenovUp + 1);
+      }
+
       return {
         ...prev,
         totalDays: newTotalDays,
@@ -688,9 +695,10 @@ export default function App() {
         coins: prev.coins + rewardCoins,
         renovationLevel: nextLevel,
         renovationStars: updatedStars,
+        upgrades: newUpgrades,
       };
     });
-    showToast(`🔨 Этап ремонта ${level} пройден! +${formatNumber(rewardCoins)} 💰 и +${rewardDays} дней!`);
+    showToast(`🔨 Этап ремонта ${level} пройден! +${formatNumber(rewardCoins)} 💰 и ремонт ускорен!`);
   };
 
   const handleCompleteRace = (
