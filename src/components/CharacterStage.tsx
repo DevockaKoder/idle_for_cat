@@ -63,6 +63,7 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
 
   return (
     <div
+      id="character-stage-container"
       className={`relative w-full rounded-[32px] overflow-hidden shadow-sm transition-all duration-1000 border ${
         hasMet
           ? 'bg-white border-4 border-[#7B96AC]'
@@ -118,17 +119,21 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
         )}
       </div>
 
-      {/* Floating Click Numbers */}
+      {/* Floating Click Numbers - Displayed directly above the clicked button or avatar */}
       <AnimatePresence>
         {floatingTexts.map((item) => (
           <motion.div
             key={item.id}
-            initial={{ opacity: 1, y: item.y, x: item.x, scale: 0.8 }}
-            animate={{ opacity: 0, y: item.y - 80, scale: 1.2 }}
+            initial={{ opacity: 1, y: 0, scale: 0.85 }}
+            animate={{ opacity: 0, y: -45, scale: 1.08 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.9, ease: 'easeOut' }}
-            className="absolute pointer-events-none z-50 font-extrabold text-sm sm:text-base drop-shadow select-none font-mono"
-            style={{ color: item.color, left: item.x, top: item.y }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="absolute pointer-events-none z-50 font-extrabold text-xs sm:text-sm drop-shadow-md select-none font-mono whitespace-nowrap px-2.5 py-1 rounded-xl bg-white/95 border border-[#E5E1D8] shadow-md -translate-x-1/2 -translate-y-1/2"
+            style={{
+              color: item.color,
+              left: `${item.x}px`,
+              top: `${item.y}px`,
+            }}
           >
             {item.text}
           </motion.div>

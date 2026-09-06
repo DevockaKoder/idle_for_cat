@@ -387,6 +387,53 @@ export default function App() {
     return () => clearInterval(interval);
   }, [calculateRates]);
 
+  const spawnFloatingText = (
+    e: React.MouseEvent<HTMLElement>,
+    text: string,
+    color: string
+  ) => {
+    const stageEl = document.getElementById('character-stage-container');
+    const stageRect = stageEl ? stageEl.getBoundingClientRect() : null;
+    const targetEl = e.currentTarget as HTMLElement;
+    const targetRect = targetEl ? targetEl.getBoundingClientRect() : null;
+
+    let x: number;
+    let y: number;
+
+    if (stageRect) {
+      if (e.clientX && e.clientY) {
+        x = e.clientX - stageRect.left;
+        y = e.clientY - stageRect.top;
+      } else if (targetRect) {
+        x = targetRect.left + targetRect.width / 2 - stageRect.left;
+        y = targetRect.top + targetRect.height / 2 - stageRect.top;
+      } else {
+        x = stageRect.width / 2;
+        y = stageRect.height * 0.75;
+      }
+    } else {
+      x = 150;
+      y = 150;
+    }
+
+    // Natural random jitter around the clicked button/cursor
+    x += Math.random() * 20 - 10;
+    y += Math.random() * 8 - 4;
+
+    const newParticle: FloatingText = {
+      id: `${Date.now()}_${Math.random()}`,
+      text,
+      x,
+      y,
+      color,
+    };
+
+    setFloatingTexts((prev) => [...prev.slice(-15), newParticle]);
+    setTimeout(() => {
+      setFloatingTexts((prev) => prev.filter((p) => p.id !== newParticle.id));
+    }, 850);
+  };
+
   const handleMoneyClick = (e: React.MouseEvent<HTMLElement>) => {
     touchActivity();
     const hasMet = gameState.totalDays >= MEETING_DAY;
@@ -418,22 +465,9 @@ export default function App() {
       isAfk: false,
     }));
 
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const x = e.clientX ? e.clientX - rect.left : 100;
-    const y = e.clientY ? e.clientY - rect.top : 100;
-
-    const newParticle: FloatingText = {
-      id: `${Date.now()}_${Math.random()}`,
-      text: hasMet ? `+${gainedLove} ❤️ +${gainedCoins} 💰` : `+${gainedCoins} 💰`,
-      x: Math.max(20, Math.min(rect.width - 100, x + (Math.random() * 40 - 20))),
-      y: Math.max(20, y + (Math.random() * 20 - 10)),
-      color: hasMet ? '#D48166' : '#4A6B82',
-    };
-
-    setFloatingTexts((prev) => [...prev.slice(-15), newParticle]);
-    setTimeout(() => {
-      setFloatingTexts((prev) => prev.filter((p) => p.id !== newParticle.id));
-    }, 900);
+    const text = hasMet ? `+${gainedLove} ❤️ +${gainedCoins} 💰` : `+${gainedCoins} 💰`;
+    const color = hasMet ? '#D48166' : '#4A6B82';
+    spawnFloatingText(e, text, color);
   };
 
   const handleAgeClick = (e: React.MouseEvent<HTMLElement>) => {
@@ -469,22 +503,8 @@ export default function App() {
         };
       });
 
-      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-      const x = e.clientX ? e.clientX - rect.left : 100;
-      const y = e.clientY ? e.clientY - rect.top : 100;
-
-      const newParticle: FloatingText = {
-        id: `${Date.now()}_${Math.random()}`,
-        text: `+25 ❤️ +${daysToAdd} дн. Каждый день вместе бесценен`,
-        x: Math.max(20, Math.min(rect.width - 140, x + (Math.random() * 40 - 20))),
-        y: Math.max(20, y + (Math.random() * 20 - 10)),
-        color: '#D48166',
-      };
-
-      setFloatingTexts((prev) => [...prev.slice(-15), newParticle]);
-      setTimeout(() => {
-        setFloatingTexts((prev) => prev.filter((p) => p.id !== newParticle.id));
-      }, 900);
+      const text = `+${daysToAdd} дн. ⏳ +25 ❤️`;
+      spawnFloatingText(e, text, '#D48166');
       return;
     }
 
@@ -527,23 +547,9 @@ export default function App() {
       };
     });
 
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const x = e.clientX ? e.clientX - rect.left : 100;
-    const y = e.clientY ? e.clientY - rect.top : 100;
-
     const formattedDays = Number(daysToAdd.toFixed(1));
-    const newParticle: FloatingText = {
-      id: `${Date.now()}_${Math.random()}`,
-      text: `+${formattedDays} ${formattedDays === 1 ? 'день' : formattedDays < 5 ? 'дня' : 'дней'} ⏳`,
-      x: Math.max(20, Math.min(rect.width - 100, x + (Math.random() * 40 - 20))),
-      y: Math.max(20, y + (Math.random() * 20 - 10)),
-      color: '#4A6B82',
-    };
-
-    setFloatingTexts((prev) => [...prev.slice(-15), newParticle]);
-    setTimeout(() => {
-      setFloatingTexts((prev) => prev.filter((p) => p.id !== newParticle.id));
-    }, 900);
+    const text = `+${formattedDays} ${formattedDays === 1 ? 'день' : formattedDays < 5 ? 'дня' : 'дней'} ⏳`;
+    spawnFloatingText(e, text, '#4A6B82');
   };
 
   const handleBuyUpgrade = (item: UpgradeItem) => {
