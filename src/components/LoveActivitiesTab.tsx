@@ -3,6 +3,7 @@ import { GameState, LoveActivity, GiftItem } from '../types';
 import { LOVE_ACTIVITIES_CATALOG, GIFTS_CATALOG } from '../data/gameData';
 import { formatNumber } from '../utils/formatters';
 import { Heart, Sparkles, Gift, Film, PhoneCall, Check, Lock, Flame } from 'lucide-react';
+import { katyaAvatar } from '../assets/avatars';
 
 interface LoveActivitiesTabProps {
   gameState: GameState;
@@ -49,9 +50,19 @@ export const LoveActivitiesTab: React.FC<LoveActivitiesTabProps> = ({
       {/* Top Banner with Cozy Movie Button */}
       <div className="bg-[#D48166]/10 border border-[#D48166]/30 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">💖</span>
-            <h2 className="text-lg sm:text-xl font-extrabold text-[#4A6B82]">Активности с Любимой</h2>
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-full border-2 border-[#D48166] overflow-hidden shadow-xs shrink-0 bg-white">
+              <img
+                src={katyaAvatar}
+                alt="Катя"
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <div>
+              <h2 className="text-lg sm:text-xl font-extrabold text-[#4A6B82]">Активности с Любимой (Катя)</h2>
+              <div className="text-[11px] font-semibold text-[#D48166]">Твоя вторая половинка ❤️</div>
+            </div>
           </div>
           <p className="text-xs text-[#7A756B] mt-1 max-w-xl">
             Мы пока не живем вместе, но согреваем друг друга звонками, поцелуями, приятными подарками и совместными вечерами!

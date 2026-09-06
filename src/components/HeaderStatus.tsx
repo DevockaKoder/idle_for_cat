@@ -2,6 +2,7 @@ import React from 'react';
 import { GameState } from '../types';
 import { formatNumber, formatAgeFromDays, getCalendarDate, getDaysTogether, getStageTitle } from '../utils/formatters';
 import { Coins, Heart, Volume2, VolumeX, Music, RotateCcw, Sparkles, Calendar, Cake, Lock } from 'lucide-react';
+import { kolyaAvatar, coupleAvatar } from '../assets/avatars';
 
 interface HeaderStatusProps {
   gameState: GameState;
@@ -34,8 +35,14 @@ export const HeaderStatus: React.FC<HeaderStatusProps> = ({
           
           {/* Age & Date Pillar */}
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xl shadow-xs shrink-0 ${hasMet ? 'bg-[#D48166]/15 text-[#D48166] border border-[#D48166]/30' : 'bg-[#7B96AC]/15 text-[#4A6B82] border border-[#7B96AC]/30'}`}>
-              {calendar.isBirthday ? '🎂' : hasMet ? '💖' : '🧑'}
+            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xl shadow-xs shrink-0 overflow-hidden ${hasMet ? 'bg-[#D48166]/15 text-[#D48166] border border-[#D48166]/30' : 'bg-[#7B96AC]/15 text-[#4A6B82] border border-[#7B96AC]/30'}`}>
+              {calendar.isBirthday ? (
+                '🎂'
+              ) : hasMet ? (
+                <img src={coupleAvatar} alt="Коля и Катя" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              ) : (
+                <img src={kolyaAvatar} alt="Коля" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              )}
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">

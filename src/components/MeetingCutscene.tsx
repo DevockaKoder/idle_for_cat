@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Heart, Sparkles, Stars, Calendar, Volume2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playHeartbeatSound, playFanfare, playHeartSound } from '../utils/audio';
+import { katyaAvatar, kolyaAvatar, coupleAvatar } from '../assets/avatars';
 
 interface MeetingCutsceneProps {
   isOpen: boolean;
@@ -164,10 +165,15 @@ export const MeetingCutscene: React.FC<MeetingCutsceneProps> = ({
                   transition={{ delay: 0.1, duration: 0.4 }}
                   className="flex flex-col items-center"
                 >
-                  <div className="w-20 h-20 rounded-full bg-[#4A6B82] p-1.5 shadow-md flex items-center justify-center text-4xl text-white">
-                    🧑
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-3 border-[#4A6B82] p-0.5 shadow-lg overflow-hidden bg-white">
+                    <img
+                      src={kolyaAvatar}
+                      alt="Коля"
+                      className="w-full h-full object-cover rounded-full"
+                      referrerPolicy="no-referrer"
+                    />
                   </div>
-                  <span className="text-[11px] text-[#4A6B82] font-bold mt-1 bg-white border border-[#E5E1D8] px-2.5 py-0.5 rounded-full shadow-xs">
+                  <span className="text-[11px] text-[#4A6B82] font-bold mt-1.5 bg-white border border-[#E5E1D8] px-2.5 py-0.5 rounded-full shadow-xs">
                     Коля
                   </span>
                 </motion.div>
@@ -176,7 +182,7 @@ export const MeetingCutscene: React.FC<MeetingCutsceneProps> = ({
                 <motion.div
                   animate={{ scale: [1, 1.3, 1] }}
                   transition={{ repeat: Infinity, duration: 1.3 }}
-                  className="text-4xl"
+                  className="text-3xl sm:text-4xl filter drop-shadow z-10 -mx-1"
                 >
                   💖
                 </motion.div>
@@ -187,10 +193,15 @@ export const MeetingCutscene: React.FC<MeetingCutsceneProps> = ({
                   transition={{ delay: 0.1, duration: 0.4 }}
                   className="flex flex-col items-center"
                 >
-                  <div className="w-20 h-20 rounded-full bg-[#D48166] p-1.5 shadow-md flex items-center justify-center text-4xl text-white">
-                    👩‍🦰
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-3 border-[#D48166] p-0.5 shadow-lg overflow-hidden bg-white">
+                    <img
+                      src={katyaAvatar}
+                      alt="Катя"
+                      className="w-full h-full object-cover rounded-full"
+                      referrerPolicy="no-referrer"
+                    />
                   </div>
-                  <span className="text-[11px] text-[#D48166] font-bold mt-1 bg-white border border-[#E5E1D8] px-2.5 py-0.5 rounded-full shadow-xs">
+                  <span className="text-[11px] text-[#D48166] font-bold mt-1.5 bg-white border border-[#E5E1D8] px-2.5 py-0.5 rounded-full shadow-xs">
                     Катя
                   </span>
                 </motion.div>

@@ -4,6 +4,7 @@ import { formatAgeFromDays, getDaysTogether, formatNumber } from '../utils/forma
 import { Heart, Sparkles, Lock, Gift, Crown, Award, Play, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
+import { coupleAvatar } from '../assets/avatars';
 
 interface Pause2026ModalProps {
   isOpen: boolean;
@@ -42,10 +43,20 @@ export const Pause2026Modal: React.FC<Pause2026ModalProps> = ({
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         className="w-full max-w-2xl bg-white border-2 border-[#D48166] rounded-3xl p-6 sm:p-8 shadow-2xl relative text-[#3D3D3D] my-8"
       >
-        {/* Jubilee Crown Ornament */}
-        <div className="text-center mb-4">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#D48166]/20 text-3xl shadow-xs mb-2 animate-bounce">
-            💍
+        {/* Jubilee Crown Ornament & Couple Portrait */}
+        <div className="text-center mb-4 flex flex-col items-center">
+          <div className="relative mb-3">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl border-3 border-[#D48166] p-1 shadow-lg overflow-hidden bg-white">
+              <img
+                src={coupleAvatar}
+                alt="Коля и Катя"
+                className="w-full h-full object-cover rounded-2xl"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <div className="absolute -bottom-2 -right-2 bg-white border border-[#E5E1D8] shadow-md w-8 h-8 rounded-full flex items-center justify-center text-base">
+              💍
+            </div>
           </div>
           <div className="text-xs uppercase font-extrabold text-[#D48166] tracking-widest">
             Символичный Финал Игры • 7 Сентября 2026 года

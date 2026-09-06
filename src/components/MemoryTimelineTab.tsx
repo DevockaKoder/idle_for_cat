@@ -4,6 +4,7 @@ import { MEMORY_MILESTONES } from '../data/gameData';
 import { getDaysTogether, formatAgeFromDays } from '../utils/formatters';
 import { CheckCircle, Clock, Sparkles, Lock } from 'lucide-react';
 import { motion } from 'motion/react';
+import { coupleAvatar, katyaAvatar, kolyaAvatar } from '../assets/avatars';
 
 interface MemoryTimelineTabProps {
   gameState: GameState;
@@ -129,6 +130,27 @@ export const MemoryTimelineTab: React.FC<MemoryTimelineTabProps> = ({
                 <p className="text-xs text-[#7A756B] mt-1.5 leading-relaxed">
                   {milestone.description}
                 </p>
+
+                {isSpecial && (
+                  <div className="mt-4 pt-3 border-t border-[#D48166]/20 flex items-center gap-3">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-[#D48166] overflow-hidden shadow-xs shrink-0 bg-white">
+                      <img
+                        src={coupleAvatar}
+                        alt="Коля и Катя"
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-[#D48166] flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5" /> Судьбоносное событие
+                      </div>
+                      <div className="text-[11px] text-[#7A756B] mt-0.5 leading-snug">
+                        Коля и Катя — с этого момента два сердца бьются в унисон ❤️
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           );

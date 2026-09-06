@@ -3,6 +3,7 @@ import { GameState, FloatingText } from '../types';
 import { formatAgeFromDays, getStageTitle, formatNumber } from '../utils/formatters';
 import { Heart, Sparkles, Flame, Calendar, Coins, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { katyaAvatar, kolyaAvatar, coupleAvatar } from '../assets/avatars';
 
 interface CharacterStageProps {
   gameState: GameState;
@@ -90,8 +91,13 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
             {/* Memory Polaroid Frames Hanging */}
             <div className="hidden sm:flex absolute top-6 right-6 gap-3 rotate-3 opacity-90">
               <div className="bg-[#FDFBF7] p-1.5 pb-3.5 rounded-xl border border-[#E5E1D8] shadow-md w-16 text-center transform -rotate-6">
-                <div className="w-13 h-11 bg-[#D48166]/15 rounded-lg flex items-center justify-center text-lg">
-                  💑
+                <div className="w-13 h-11 bg-[#D48166]/15 rounded-lg overflow-hidden flex items-center justify-center border border-[#E5E1D8]">
+                  <img
+                    src={coupleAvatar}
+                    alt="Коля и Катя"
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
                 </div>
                 <div className="text-[8px] text-[#4A6B82] font-semibold mt-1 font-mono">7.09.2024</div>
               </div>
@@ -181,8 +187,13 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
               <div className="relative flex items-center justify-center gap-2">
                 {/* Boy Avatar */}
                 <div className="flex flex-col items-center">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#4A6B82] p-1 shadow-md flex items-center justify-center text-3xl sm:text-4xl text-white">
-                    🧑
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-[#4A6B82] p-0.5 shadow-md overflow-hidden bg-white">
+                    <img
+                      src={kolyaAvatar}
+                      alt="Коля"
+                      className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform duration-300"
+                      referrerPolicy="no-referrer"
+                    />
                   </div>
                   <span className="text-[10px] text-[#4A6B82] font-bold mt-1 bg-white border border-[#E5E1D8] px-2 py-0.5 rounded-full shadow-xs">
                     Коля
@@ -191,17 +202,22 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
 
                 {/* Animated Kissing Heart in Center */}
                 <motion.div
-                  animate={{ scale: isKissing ? 1.5 : [1, 1.2, 1] }}
+                  animate={{ scale: isKissing ? 1.6 : [1, 1.25, 1] }}
                   transition={{ repeat: Infinity, duration: 1.5 }}
-                  className="text-2xl sm:text-3xl filter drop-shadow"
+                  className="text-2xl sm:text-3xl filter drop-shadow z-10 -mx-1"
                 >
                   {isKissing ? '💋' : '💖'}
                 </motion.div>
 
                 {/* Girl Avatar */}
                 <div className="flex flex-col items-center">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#D48166] p-1 shadow-md flex items-center justify-center text-3xl sm:text-4xl text-white">
-                    👩‍🦰
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-[#D48166] p-0.5 shadow-md overflow-hidden bg-white">
+                    <img
+                      src={katyaAvatar}
+                      alt="Катя"
+                      className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform duration-300"
+                      referrerPolicy="no-referrer"
+                    />
                   </div>
                   <span className="text-[10px] text-[#D48166] font-bold mt-1 bg-white border border-[#E5E1D8] px-2 py-0.5 rounded-full shadow-xs">
                     Катя
@@ -211,11 +227,16 @@ export const CharacterStage: React.FC<CharacterStageProps> = ({
             ) : (
               /* Solo Bachelor Illustration */
               <div className="flex flex-col items-center">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#4A6B82] p-1 shadow-md flex items-center justify-center text-5xl sm:text-6xl text-white">
-                  🧑
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-3 border-[#4A6B82] p-0.5 shadow-md overflow-hidden bg-white">
+                  <img
+                    src={kolyaAvatar}
+                    alt="Коля"
+                    className="w-full h-full object-cover rounded-full group-hover:scale-105 transition-transform duration-300"
+                    referrerPolicy="no-referrer"
+                  />
                 </div>
                 <span className="text-xs text-[#4A6B82] font-semibold mt-2 bg-white px-3 py-1 rounded-full border border-[#E5E1D8] shadow-xs">
-                  Главный герой
+                  Коля
                 </span>
               </div>
             )}

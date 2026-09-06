@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Lock, Heart, KeyRound, User, Sparkles, Eye, EyeOff, ShieldCheck, HelpCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { sha256, ALLOWED_PASSWORD_HASHES, ALLOWED_USER_HASHES } from '../utils/security';
+import { katyaAvatar, kolyaAvatar } from '../assets/avatars';
 
 interface LoginGateProps {
   onSuccess: (user: string) => void;
@@ -183,8 +184,28 @@ export const LoginGate: React.FC<LoginGateProps> = ({ onSuccess }) => {
         
         {/* Header Icon & Title */}
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="w-16 h-16 rounded-2xl bg-[#D48166]/15 border border-[#D48166]/30 flex items-center justify-center text-[#D48166] mb-3 shadow-xs">
-            <Lock className="w-8 h-8" />
+          <div className="relative mb-3 flex items-center justify-center">
+            <div className="flex items-center -space-x-3">
+              <div className="w-14 h-14 rounded-full border-2 border-[#4A6B82] overflow-hidden shadow-md bg-white z-10">
+                <img
+                  src={kolyaAvatar}
+                  alt="Коля"
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div className="w-14 h-14 rounded-full border-2 border-[#D48166] overflow-hidden shadow-md bg-white z-20">
+                <img
+                  src={katyaAvatar}
+                  alt="Катя"
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            </div>
+            <div className="absolute -bottom-1.5 -right-1 bg-white rounded-full p-1 border border-[#E5E1D8] shadow-xs text-[#D48166] z-30">
+              <Lock className="w-3.5 h-3.5" />
+            </div>
           </div>
           
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#4A6B82]/10 border border-[#4A6B82]/20 text-[#4A6B82] text-xs font-semibold mb-2">
@@ -313,12 +334,10 @@ export const LoginGate: React.FC<LoginGateProps> = ({ onSuccess }) => {
             {/* Hint Box */}
             {showHint && (
               <div className="p-3.5 rounded-xl bg-[#F0EDE6] border border-[#E5E1D8] text-xs text-[#59554D] leading-relaxed space-y-1.5 animate-fadeIn">
-                <p className="font-semibold text-[#3D3D3D]">Секретом может быть любой из вариантов:</p>
-                <p className="flex items-center gap-1.5">• <strong>0709</strong> (или 07.09 — дата встречи)</p>
-                <p className="flex items-center gap-1.5">• <strong>2026</strong> (текущий год)</p>
-                <p className="flex items-center gap-1.5">• <strong>любовь</strong> или <strong>love</strong></p>
-                <p className="flex items-center gap-1.5">• <strong>кот</strong> или <strong>cat</strong></p>
-                <p className="flex items-center gap-1.5">• <strong>1234</strong></p>
+                <p className="font-semibold text-[#3D3D3D]">Подсказка к секрету:</p>
+                <p className="flex items-center gap-1.5">• Дата вашей первой встречи (ДДММ)</p>
+                <p className="flex items-center gap-1.5">• Текущий 4-значный год</p>
+                <p className="flex items-center gap-1.5">• Главное чувство (рус./англ.) или ваш пушистый питомец</p>
                 <p className="flex items-center gap-1.5">• Имя одного из вас</p>
               </div>
             )}
